@@ -1,0 +1,53 @@
+{
+  "stations":
+  [
+    {
+    "name": "Capital FM",
+    "url" : "http://vis.media-ice.musicradio.com/CapitalMP3"
+    },
+    {
+    "name": "Mellow Magic",
+    "url" : "http://stream-mz.planetradio.co.uk/magicmellow.mp3"
+    },
+    {
+    "name": "Beatles",
+    "url" : "http://listen.181fm.com/181-beatles_128k.mp3"
+    },
+    {
+    "name": "BBC Radio 1",
+    "url" : "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_p"
+    },
+    {
+    "name": "BBC Radio 2",
+    "url" : "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio2_mf_p"
+    },
+    {
+    "name": "BBC Radio 5 Live",
+    "url" : "http://sc59.lon.llnw.net:80/stream/bbcmedia_radio5live_mf_p"
+    },
+    {
+    "name": "BBC 5 Live Sports Extra",
+    "url" : "http://www.radiofeeds.co.uk/bbc5livesportsextra.pls"
+    },
+    {
+    "name": "BBC Radio Shetland",
+    "url" : "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_shetland_mf_p"
+    },
+    {
+    "name": "African",
+    "url" : "http://37.59.28.208:8158/listen.pls"
+    },
+    {
+    "name": "KPOP",
+    "url" : "http://108.61.154.147:5938/listen.pls"
+    },
+    {
+    "name": "113FM Korean Pop",
+    "url" : "http://23.227.186.10:80/1789_128"
+    },
+    {
+    "name": "DJ Digital K-Pop",
+    "url" : "http://198.27.80.154:8080"
+    }        
+  ]
+}
