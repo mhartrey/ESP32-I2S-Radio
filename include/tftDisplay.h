@@ -86,6 +86,10 @@ TFT_eSPI_Button settingsBtn;
 #define SETTINGS_ICON_X 160
 #define SETTINGS_ICON_Y 145
 
+// Button size
+#define BUTTON_WIDTH 50
+#define BUTTON_HEIGHT 40
+
 int currentBrightness;
 
 void displaySetup()
@@ -245,8 +249,8 @@ void createButtons()
   prevBtn.initButtonUL( &tft, 
     CHANNELDOWN_BUTTON_X, // X
     CHANNELDOWN_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -257,8 +261,8 @@ void createButtons()
   nextBtn.initButtonUL( &tft, 
     CHANNELUP_BUTTON_X, // X
     CHANNELUP_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -269,8 +273,8 @@ void createButtons()
   muteBtn.initButtonUL( &tft, 
     MUTE_BUTTON_X, // X
     MUTE_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -281,8 +285,8 @@ void createButtons()
   volDownBtn.initButtonUL( &tft, 
     VOLUMEDOWN_BUTTON_X, // X
     VOLUMEDOWN_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -293,8 +297,8 @@ void createButtons()
   volUpBtn.initButtonUL( &tft, 
     VOLUMEUP_BUTTON_X, // X
     VOLUMEUP_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -305,8 +309,8 @@ void createButtons()
   brightnessDownBtn.initButtonUL( &tft, 
     BRIGHTNESSDOWN_BUTTON_X, // X
     BRIGHTNESSDOWN_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -317,8 +321,8 @@ void createButtons()
   brightnessUpBtn.initButtonUL( &tft, 
     BRIGHTNESSUP_BUTTON_X, // X
     BRIGHTNESSUP_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
@@ -329,8 +333,8 @@ void createButtons()
   settingsBtn.initButtonUL( &tft, 
     SETTINGS_BUTTON_X, // X
     SETTINGS_BUTTON_Y, // Y
-    50, // Width
-    40, // Height
+    BUTTON_WIDTH, // Width
+    BUTTON_HEIGHT, // Height
     TFT_YELLOW, // Outline colour
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
