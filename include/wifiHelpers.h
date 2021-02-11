@@ -1,15 +1,6 @@
 // All things WiFi go here
-#include "WiFi.h"
-
-std::string ssid;
-std::string wifiPassword;
-bool wiFiDisconnected = true;
-
-// Forward declarations
-void connectToWifi();
-std::string getWiFiPassword();
-std::string getSSID();
-const char *wl_status_to_string(wl_status_t status);
+#include "Arduino.h"
+#include "main.h"
 
 // Get the WiFi SSID
 std::string getSSID()
@@ -39,13 +30,12 @@ std::string getWiFiPassword()
   }
 }
 
-
 // Connect to WiFi
 void connectToWifi()
 {
   ssid = getSSID();
   wifiPassword = getWiFiPassword();
-  
+
   Serial.printf("Connecting to SSID: %s\n", ssid.c_str());
 
   // Ensure we disconnect WiFi first to stop connection problems
@@ -85,14 +75,14 @@ void connectToWifi()
   if ((wl_status_t)wifiStatus != WL_CONNECTED)
   {
     Serial.printf("WiFi Status: %s, exiting\n", wl_status_to_string((wl_status_t)wifiStatus));
+    displayWiFiOff();
     return;
   }
 
   Serial.printf("WiFi connected with (local) IP address of: %s\n", WiFi.localIP().toString().c_str());
+  displayWiFiOn();
   wiFiDisconnected = false;
 }
-
-
 
 // Convert the WiFi (error) response to a string we can understand
 const char *wl_status_to_string(wl_status_t status)

@@ -1,20 +1,14 @@
-
 // All of the ILI9341 TFT Touch Screen routines are included here
+#include <arduino.h>
+#include "main.h"
+#include "bitmapHelper.h"
 
 // Used to create critical sessions to ensure some screen updates are not preempted (leaving screen partially updated)
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
-// Calibration data is stored in SPIFFS so we need to include it
-#include "FS.h"
-
-#include <SPI.h>
-
-#include <TFT_eSPI.h> // Hardware-specific library
-
-TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
-
 TFT_eSPI_Button prevBtn, nextBtn, volDownBtn, volUpBtn, muteBtn;
 TFT_eSPI_Button brightnessDownBtn, brightnessUpBtn;
+TFT_eSPI_Button settingsBtn;
 
 // This is the file name used to store the touch coordinate
 // calibration data. Cahnge the name to start a new calibration.
@@ -28,15 +22,69 @@ TFT_eSPI_Button brightnessDownBtn, brightnessUpBtn;
 // Define PWM pin for LED screen brigthness control
 #define TFT_LEDPIN 32 // GPIO 32 - could potentially use different GPIO pin
 
-// Forward declarations
-void displaySetup();
-void touch_calibrate();
-void layoutScreen();
-void displayStationName(char *stationName);
-void displayTrackArtist(std::string);
-void createButtons();
-void displayStatusInfo(char *information);
-void setScreenBrightness(int);
+// WiFi icon
+#define WIFI_ICON_X 0
+#define WIFI_ICON_Y 7
+
+// Buffer icon
+#define BUFFER_ICON_X 28
+#define BUFFER_ICON_Y 7
+
+// Buffer icon
+#define BITRATE_LOCATION_X 60
+#define BITRATE_LOCATION_Y 28
+
+// Radio Title
+#define TITLE_LOCATION_X 105
+#define TITLE_LOCATION_Y 30
+
+// Mute button / icon
+#define MUTE_BUTTON_X 135
+#define MUTE_BUTTON_Y 200
+#define MUTE_ICON_X 145
+#define MUTE_ICON_Y 205
+
+// Volume down button / icon
+#define VOLUMEDOWN_BUTTON_X 210
+#define VOLUMEDOWN_BUTTON_Y 200
+#define VOLUMEDOWN_ICON_X 220
+#define VOLUMEDOWN_ICON_Y 205
+
+// Volume up button / icon
+#define VOLUMEUP_BUTTON_X 270
+#define VOLUMEUP_BUTTON_Y 200
+#define VOLUMEUP_ICON_X 280
+#define VOLUMEUP_ICON_Y 205
+
+// Channel down (prev) button / icon
+#define CHANNELDOWN_BUTTON_X 0
+#define CHANNELDOWN_BUTTON_Y 200
+#define CHANNELDOWN_ICON_X 10
+#define CHANNELDOWN_ICON_Y 205
+
+// Channel up (next) button / icon
+#define CHANNELUP_BUTTON_X 60
+#define CHANNELUP_BUTTON_Y 200
+#define CHANNELUP_ICON_X 70
+#define CHANNELUP_ICON_Y 205
+
+// Brightness down button / icon
+#define BRIGHTNESSDOWN_BUTTON_X 210
+#define BRIGHTNESSDOWN_BUTTON_Y 140
+#define BRIGHTNESSDOWN_ICON_X 220
+#define BRIGHTNESSDOWN_ICON_Y 145
+
+// Brightness up button / icon
+#define BRIGHTNESSUP_BUTTON_X 270
+#define BRIGHTNESSUP_BUTTON_Y 140
+#define BRIGHTNESSUP_ICON_X 280
+#define BRIGHTNESSUP_ICON_Y 145
+
+// Settings button / icon
+#define SETTINGS_BUTTON_X 150
+#define SETTINGS_BUTTON_Y 140
+#define SETTINGS_ICON_X 160
+#define SETTINGS_ICON_Y 145
 
 int currentBrightness;
 
@@ -164,127 +212,129 @@ void layoutScreen()
   // Write title of app on screen, using font 2 (x, y, font #)
   tft.fillScreen(TFT_BLACK);
 
-  // Border + fill
+  // Top divider
   tft.fillRect(0, 40, 320, 2, TFT_WHITE);
 
   // Application Title
   tft.setFreeFont(&FreeSansBold12pt7b);
   tft.setTextSize(1);
-  tft.setCursor(12, 30);
+  tft.setCursor(TITLE_LOCATION_X, TITLE_LOCATION_Y);
   tft.setTextColor(TFT_ORANGE);
-  tft.println("APA RADIO"); 
+  tft.println("APA RADIO");
 
+  // Bottom divider
   tft.fillRect(0, 190, 320, 2, TFT_WHITE);
-  
-  createButtons();
-}
-/*
-void layoutScreen()
-{
-  // Write title of app on screen, using font 2 (x, y, font #)
-  tft.fillScreen(TFT_BLACK);
-
-  // Border + fill
-  tft.fillRect(1, 1, 318, 43, TFT_RED);
-  tft.drawRect(0, 0, 320, 45, TFT_YELLOW);
-
-  // Application Title
-  tft.setFreeFont(&FreeSansBold12pt7b);
-  tft.setTextSize(1);
-  tft.setCursor(14, 30);
-
-  // Set text colour and background
-  tft.setTextColor(TFT_YELLOW, TFT_RED);
-  tft.println("- APA INTERNET RADIO -"); 
 
   createButtons();
+
+  displayWiFiOff();
+  displayBufferInactive();
+  displayMuteOff();
+  displayVolumeUp();
+  displayVolumeDown();
+  displayChannelUp();
+  displayChannelDown();
+  displayBrightnessUp();
+  displayBrightnessDown();
+  displaySettings();
 }
-*/
 
 void createButtons()
 {
 
   prevBtn.initButtonUL( &tft, 
-    0, // X
-    200, // Y
+    CHANNELDOWN_BUTTON_X, // X
+    CHANNELDOWN_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"<", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
       
   nextBtn.initButtonUL( &tft, 
-    60, // X
-    200, // Y
+    CHANNELUP_BUTTON_X, // X
+    CHANNELUP_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)">", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
 
   muteBtn.initButtonUL( &tft, 
-    135, // X
-    200, // Y
+    MUTE_BUTTON_X, // X
+    MUTE_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"M", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
     
   volDownBtn.initButtonUL( &tft, 
-    210, // X
-    200, // Y
+    VOLUMEDOWN_BUTTON_X, // X
+    VOLUMEDOWN_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"-", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
 
   volUpBtn.initButtonUL( &tft, 
-    270, // X
-    200, // Y
+    VOLUMEUP_BUTTON_X, // X
+    VOLUMEUP_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"+", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
   
   brightnessDownBtn.initButtonUL( &tft, 
-    210, // X
-    140, // Y
+    BRIGHTNESSDOWN_BUTTON_X, // X
+    BRIGHTNESSDOWN_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"v", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
 
   brightnessUpBtn.initButtonUL( &tft, 
-    270, // X
-    140, // Y
+    BRIGHTNESSUP_BUTTON_X, // X
+    BRIGHTNESSUP_BUTTON_Y, // Y
     50, // Width
     40, // Height
-    TFT_BLACK, // Outline colour
-    TFT_YELLOW, // Fill colour
-    TFT_RED, // Text colour
-    (char *)"^", // Label
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
+    1 // Text size
+    );
+
+  settingsBtn.initButtonUL( &tft, 
+    SETTINGS_BUTTON_X, // X
+    SETTINGS_BUTTON_Y, // Y
+    50, // Width
+    40, // Height
+    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Fill colour
+    TFT_BLACK, // Text colour
+    (char *)"", // Label
     1 // Text size
     );
 
@@ -296,9 +346,8 @@ void createButtons()
 
   brightnessDownBtn.drawButton();
   brightnessUpBtn.drawButton();
+  settingsBtn.drawButton();
 }
-
-
 
 void displayStationName(const char *stationName)
 {
@@ -316,15 +365,14 @@ void displayStationName(const char *stationName)
   if (strlen(stationName) == 0)
   {
     // Station name not broadcast therefore use configured name
-    tft.println(getFriendlyName());
+    tft.println(getFriendlyStationName());
   }
   else
   {
     tft.println(stationName);
   }
-  portEXIT_CRITICAL(&mux); 
+  portEXIT_CRITICAL(&mux);
 }
-
 
 void displayTrackArtist(const char *trackArtist)
 {
@@ -343,9 +391,10 @@ void displayTrackArtist(const char *trackArtist)
   portEXIT_CRITICAL(&mux); 
 }
 
-
 void displayBuffer(uint16_t bufferpercentage)
 {
+  portENTER_CRITICAL(&mux);
+
   // Set text colour and background
   if (bufferpercentage > 70)
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
@@ -363,29 +412,14 @@ void displayBuffer(uint16_t bufferpercentage)
   tft.setCursor(0, 155);
   tft.print(bufferpercentage);
   tft.print("%");
-}
 
-void displayBitRate(const char *bitrate)
-{
-  portENTER_CRITICAL(&mux);
-  // Set text colour and background
-  tft.setTextColor(TFT_SILVER, TFT_BLACK);
-
-  // Clear the remainder of the line from before
-  //tft.fillRect(0, 170, 320, 20, TFT_BLACK);
-  tft.fillRect(0, 170, 200, 20, TFT_BLACK);
-
-  // Write buffer percentage
-  tft.setFreeFont(&FreeSans9pt7b);
-  tft.setTextSize(1);
-  tft.setCursor(0, 185);
-  tft.print(bitrate);
-  tft.print(" bps");
-  portEXIT_CRITICAL(&mux); 
+  portEXIT_CRITICAL(&mux);
 }
 
 void displayStatusInfo(const char *information)
 {
+  portENTER_CRITICAL(&mux);
+
   // Set text colour and background
   tft.setTextColor(TFT_GREEN, TFT_BLACK);
 
@@ -397,34 +431,40 @@ void displayStatusInfo(const char *information)
   tft.setTextSize(1);
   tft.setCursor(0, 110);
   tft.print(information);
+
+  portEXIT_CRITICAL(&mux);
 }
 
 void displayClock(const char *time)
 {
-  portENTER_CRITICAL(&mux);  
+  portENTER_CRITICAL(&mux);
+
   tft.fillRect(250, 5, 320, 30, TFT_BLACK); // Clear previous time
   tft.setFreeFont(&FreeSansBold12pt7b);
   tft.setTextSize(1);
   tft.setCursor(250, 30);
   tft.setTextColor(TFT_ORANGE);
   tft.print(time);
-  portEXIT_CRITICAL(&mux); 
+
+  portEXIT_CRITICAL(&mux);
 }
 
 // Not really used yet - could be used when radio not on
 void displayLargeClock(const char *time)
 {
-  portENTER_CRITICAL(&mux);  
+  portENTER_CRITICAL(&mux);
+
   tft.fillRect(80, 90, 140, 70, TFT_BLACK); // Clear previous time
   tft.setFreeFont(&FreeSerifBold24pt7b);
   tft.setTextSize(1);
   tft.setCursor(90, 130);
   tft.setTextColor(TFT_ORANGE);
   tft.print(time);
-  portEXIT_CRITICAL(&mux); 
+
+  portEXIT_CRITICAL(&mux);
 }
 
-bool getPrevButtonPress(uint16_t t_x, uint16_t t_y)
+bool isPrevButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (prevBtn.contains(t_x, t_y))
   {
@@ -434,7 +474,7 @@ bool getPrevButtonPress(uint16_t t_x, uint16_t t_y)
   return false;
 }
 
-bool getNextButtonPress(uint16_t t_x, uint16_t t_y)
+bool isNextButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (nextBtn.contains(t_x, t_y))
   {
@@ -444,54 +484,192 @@ bool getNextButtonPress(uint16_t t_x, uint16_t t_y)
   return false;
 }
 
-bool getVolDownButtonPress(uint16_t t_x, uint16_t t_y)
+bool isVolDownButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (volDownBtn.contains(t_x, t_y))
   {
-    volDownBtn.drawButton(true);
     return true;
   }
   return false;
 }
 
-bool getVolUpButtonPress(uint16_t t_x, uint16_t t_y)
+bool isVolUpButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (volUpBtn.contains(t_x, t_y))
   {
-    volUpBtn.drawButton(true);
     return true;
   }
   return false;
 }
 
-bool getBrightnessDownButtonPress(uint16_t t_x, uint16_t t_y)
+bool isBrightnessDownButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (brightnessDownBtn.contains(t_x, t_y))
   {
-    brightnessDownBtn.drawButton(true);
     return true;
   }
   return false;
 }
 
-bool getBrightnessUpButtonPress(uint16_t t_x, uint16_t t_y)
+bool isBrightnessUpButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (brightnessUpBtn.contains(t_x, t_y))
   {
-    brightnessUpBtn.drawButton(true);
     return true;
   }
   return false;
 }
 
-bool getMuteButtonPress(uint16_t t_x, uint16_t t_y)
+bool isMuteButtonPressed(uint16_t t_x, uint16_t t_y)
 {
   if (muteBtn.contains(t_x, t_y))
   {
-    muteBtn.drawButton(true);
     return true;
   }
   return false;
+}
+
+bool isSettingsButtonPressed(uint16_t t_x, uint16_t t_y)
+{
+  if (settingsBtn.contains(t_x, t_y))
+  {
+    return true;
+  }
+  return false;
+}
+
+void displayMuteOn()
+{
+  drawBmp("/speaker-off.bmp", MUTE_ICON_X, MUTE_ICON_Y);  
+}
+
+void displayMuteOff()
+{
+    drawBmp("/speaker-on.bmp", MUTE_ICON_X, MUTE_ICON_Y);
+}
+
+void displayWiFiOn()
+{
+  drawBmp("/wifi-active.bmp", WIFI_ICON_X, WIFI_ICON_Y);  
+}
+
+void displayWiFiOff()
+{
+    drawBmp("/wifi-inactive.bmp", WIFI_ICON_X, WIFI_ICON_Y);
+}
+
+void displayVolumeUp()
+{
+  drawBmp("/volume-up.bmp", VOLUMEUP_ICON_X, VOLUMEUP_ICON_Y);  
+}
+
+void displayVolumeUpPressed()
+{
+  drawBmp("/volume-up-pressed.bmp", VOLUMEUP_ICON_X, VOLUMEUP_ICON_Y);  
+}
+
+void displayVolumeDown()
+{
+    drawBmp("/volume-down.bmp", VOLUMEDOWN_ICON_X, VOLUMEDOWN_ICON_Y);
+}
+
+void displayVolumeDownPressed()
+{
+  drawBmp("/volume-down-pressed.bmp", VOLUMEDOWN_ICON_X, VOLUMEDOWN_ICON_Y);  
+}
+
+void displayChannelUp()
+{
+  drawBmp("/channel-up.bmp", CHANNELUP_ICON_X, CHANNELUP_ICON_Y);  
+}
+
+void displayChannelUpPressed()
+{
+  drawBmp("/channel-up-pressed.bmp", CHANNELUP_ICON_X, CHANNELUP_ICON_Y);  
+}
+
+void displayChannelDown()
+{
+  drawBmp("/channel-down.bmp", CHANNELDOWN_ICON_X, CHANNELDOWN_ICON_Y);  
+}
+
+void displayChannelDownPressed()
+{
+  drawBmp("/channel-down-pressed.bmp", CHANNELDOWN_ICON_X, CHANNELDOWN_ICON_Y);  
+}
+
+void displayBufferInactive()
+{
+  drawBmp("/buffer-inactive.bmp", BUFFER_ICON_X, BUFFER_ICON_Y);  
+}
+
+void displayBrightnessUp()
+{
+  drawBmp("/brightness-up.bmp", BRIGHTNESSUP_ICON_X, BRIGHTNESSUP_ICON_Y);  
+}
+
+void displayBrightnessUpPressed()
+{
+  drawBmp("/brightness-up-pressed.bmp", BRIGHTNESSUP_ICON_X, BRIGHTNESSUP_ICON_Y);  
+}
+
+void displayBrightnessDown()
+{
+  drawBmp("/brightness-down.bmp", BRIGHTNESSDOWN_ICON_X, BRIGHTNESSDOWN_ICON_Y);  
+}
+
+void displayBrightnessDownPressed()
+{
+  drawBmp("/brightness-down-pressed.bmp", BRIGHTNESSDOWN_ICON_X, BRIGHTNESSDOWN_ICON_Y);  
+}
+
+void displaySettings()
+{
+  drawBmp("/settings.bmp", SETTINGS_ICON_X, SETTINGS_ICON_Y);  
+}
+
+void displaySettingsPressed()
+{
+  drawBmp("/settings-pressed.bmp", SETTINGS_ICON_X, SETTINGS_ICON_Y);  
+}
+
+void displayBufferRed()
+{
+  drawBmp("/buffer-red.bmp", BUFFER_ICON_X, BUFFER_ICON_Y);  
+}
+
+void displayBufferAmber()
+{
+  drawBmp("/buffer-amber.bmp", BUFFER_ICON_X, BUFFER_ICON_Y);  
+}
+
+void displayBufferGreen()
+{
+  drawBmp("/buffer-green.bmp", BUFFER_ICON_X, BUFFER_ICON_Y);  
+}
+
+void displayBitRate(const char *bitrate)
+{
+  portENTER_CRITICAL(&mux);
+
+  // Set text colour and background
+  tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+
+  // Clear the remainder of the line from before
+  tft.fillRect(BITRATE_LOCATION_X, BITRATE_LOCATION_Y - 15, 40, 20, TFT_BLACK);
+
+  // Write buffer percentage
+  tft.setFreeFont(&FreeSans9pt7b);
+  tft.setTextSize(1);
+  tft.setCursor(BITRATE_LOCATION_X, BITRATE_LOCATION_Y);
+  tft.printf("%.3sk", bitrate); // display at most 3 digits (might fail for 64k!)
+
+  portEXIT_CRITICAL(&mux); 
+}
+
+void clearBitRate()
+{
+  tft.fillRect(BITRATE_LOCATION_X, BITRATE_LOCATION_Y - 15, 40, 20, TFT_BLACK);
 }
 
 // 0 (off) to 255(bright) duty cycle
@@ -513,8 +691,8 @@ void incrementScreenBrightness()
 void decrementScreenBrightness()
 {
   currentBrightness -= 20;
-  if (currentBrightness < 0)
-    currentBrightness = 0;
+  if (currentBrightness < 5)
+    currentBrightness = 5;
 
   setScreenBrightness(currentBrightness);
 }

@@ -1,25 +1,17 @@
 // Stations stored in JSON format
+#include <arduino.h>
 #include <ArduinoJson.h>
 
-// Utility to write to (psuedo) EEPROM
-#include <Preferences.h>
-
-// EEPROM writing routines (eg: remembers previous radio stn)
-Preferences preferences;
-
-void loadStation();
-void changeStation(int8_t upOrDown);
+// Forward declarations
 void connectToStation();
-const char *getFriendlyName();
 
 unsigned long channelLastChanged = millis();
 const unsigned long AllowChangeMS = 500;
 
-
 struct station
 {
-  char name[40];  // friendly name
-  char url[80];   // station URL
+  char name[40]; // friendly name
+  char url[80];  // station URL
 };
 
 const int maxStations = 32;
@@ -28,7 +20,6 @@ int8_t numberOfStations = 0;
 
 // Current Station Number
 unsigned int currentStation;
-
 
 // Loads the configuration from a file
 void loadRadioStations()
@@ -76,7 +67,6 @@ void loadRadioStations()
   Serial.printf("Finished loading %d radio stations", numberOfStations);
 }
 
-
 void loadStation()
 {
   // Retreive the last played station (if available)
@@ -88,13 +78,12 @@ void loadStation()
   connectToStation();
 }
 
-
 void changeStation(int8_t btnValue)
 {
   int8_t nextStation;
 
   nextStation = currentStation + btnValue;
-  
+
   if (nextStation > numberOfStations)
     nextStation = 0;
   else if (nextStation < 0)
@@ -122,12 +111,10 @@ void connectToStation()
   xSemaphoreGive(xMutex);
 }
 
-
-const char *getFriendlyName()
+const char *getFriendlyStationName()
 {
   return radioStation[currentStation].name;
 }
-
 
 boolean allowChannelChange()
 {

@@ -1,6 +1,5 @@
 // SPIFFS (in-memory SPI File System) replacement
-#include <LITTLEFS.h>
-
+#include <arduino.h>
 
 void mountLITTLEFS()
 {
