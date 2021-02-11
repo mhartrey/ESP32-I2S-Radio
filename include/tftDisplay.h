@@ -27,12 +27,12 @@ TFT_eSPI_Button settingsBtn;
 #define WIFI_ICON_Y 7
 
 // Buffer icon
-#define BUFFER_ICON_X 28
+#define BUFFER_ICON_X 30
 #define BUFFER_ICON_Y 7
 
-// Buffer icon
-#define BITRATE_LOCATION_X 60
-#define BITRATE_LOCATION_Y 28
+// Bitrate info
+#define BITRATE_LOCATION_X 275
+#define BITRATE_LOCATION_Y 75
 
 // Radio Title
 #define TITLE_LOCATION_X 105
@@ -81,10 +81,10 @@ TFT_eSPI_Button settingsBtn;
 #define BRIGHTNESSUP_ICON_Y 145
 
 // Settings button / icon
-#define SETTINGS_BUTTON_X 150
-#define SETTINGS_BUTTON_Y 140
-#define SETTINGS_ICON_X 160
-#define SETTINGS_ICON_Y 145
+#define SETTINGS_BUTTON_X 270
+#define SETTINGS_BUTTON_Y 0
+#define SETTINGS_ICON_X 280
+#define SETTINGS_ICON_Y 5
 
 // Button size
 #define BUTTON_WIDTH 50
@@ -220,11 +220,13 @@ void layoutScreen()
   tft.fillRect(0, 40, 320, 2, TFT_WHITE);
 
   // Application Title
+  /*
   tft.setFreeFont(&FreeSansBold12pt7b);
   tft.setTextSize(1);
   tft.setCursor(TITLE_LOCATION_X, TITLE_LOCATION_Y);
   tft.setTextColor(TFT_ORANGE);
   tft.println("APA RADIO");
+  */
 
   // Bottom divider
   tft.fillRect(0, 190, 320, 2, TFT_WHITE);
@@ -335,7 +337,7 @@ void createButtons()
     SETTINGS_BUTTON_Y, // Y
     BUTTON_WIDTH, // Width
     BUTTON_HEIGHT, // Height
-    TFT_YELLOW, // Outline colour
+    TFT_BLACK, // Outline colour - was TFT_YELLOW
     TFT_BLACK, // Fill colour
     TFT_BLACK, // Text colour
     (char *)"", // Label
@@ -360,7 +362,7 @@ void displayStationName(const char *stationName)
   tft.setTextColor(TFT_YELLOW, TFT_BLACK);
 
   // Clear the remainder of the line from before (eg long title)
-  tft.fillRect(0, 50, 320, 40, TFT_BLACK);
+  tft.fillRect(0, 50, 270, 40, TFT_BLACK);
 
   // Write station name
   tft.setCursor(0, 75);
@@ -443,10 +445,10 @@ void displayClock(const char *time)
 {
   portENTER_CRITICAL(&mux);
 
-  tft.fillRect(250, 5, 320, 30, TFT_BLACK); // Clear previous time
-  tft.setFreeFont(&FreeSansBold12pt7b);
+  tft.fillRect(110, 5, 90, 30, TFT_BLACK); // Clear previous time
+  tft.setFreeFont(&FreeSansBold18pt7b);
   tft.setTextSize(1);
-  tft.setCursor(250, 30);
+  tft.setCursor(110, 30);
   tft.setTextColor(TFT_ORANGE);
   tft.print(time);
 
