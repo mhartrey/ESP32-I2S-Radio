@@ -30,6 +30,8 @@ void mountLITTLEFS();
 // Touch Screen Display
 #include <TFT_eSPI.h> // Hardware-specific library
 
+SemaphoreHandle_t xBinarySemaphore;
+
 // TFT Display forward declarations
 void displaySetup();
 void touch_calibrate();
@@ -39,7 +41,7 @@ void displayTrackArtist(std::string);
 void createButtons();
 void displayStatusInfo(char *information);
 void setScreenBrightness(int);
-void displayMuteOff();
+void displayMuteOff(bool redrawButton = false);
 void displayMuteOn();
 void displayWiFiOff();
 void displayWiFiOn();
@@ -47,20 +49,22 @@ void displayBufferInactive();
 void displayBufferRed();
 void displayBufferAmber();
 void displayBufferGreen();
-void displayVolumeUp();
+void displayVolumeUp(bool redrawButton = false);
 void displayVolumeUpPressed();
-void displayVolumeDown();
+void displayVolumeDown(bool redrawButton = false);
 void displayVolumeDownPressed();
-void displayChannelUp();
+void displayChannelUp(bool redrawButton = false);
 void displayChannelUpPressed();
-void displayChannelDown();
+void displayChannelDown(bool redrawButton = false);
 void displayChannelDownPressed();
-void displayBrightnessUp();
+void displayBrightnessUp(bool redrawButton = false);
 void displayBrightnessUpPressed();
-void displayBrightnessDown();
+void displayBrightnessDown(bool redrawButton = false);
 void displayBrightnessDownPressed();
 void displaySettings();
 void displaySettingsPressed();
+void displayMainButtons();
+void displaySettingsButtons();
 void clearBitRate();
 
 // Instantiate screen (object) using hardware SPI. Defaults to 320H x 240W

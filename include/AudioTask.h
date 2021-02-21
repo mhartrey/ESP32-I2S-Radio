@@ -14,24 +14,23 @@ TaskHandle_t playAudioTaskHandle;
 
 volatile bool allowPlayAudio = false;
 
-
 // This is the task that we will start running (on Core 1, don't use Core 0)
 void playAudioTask(void *parameter)
 {
   static unsigned long prevMillis = 0;
   Serial.println("Started playAudioTask");
-  
+
   // Loop forever
   while (1)
   {
     if (allowPlayAudio)
     {
       // Play audio stream - semaphore protects against channel change
-      xSemaphoreTake( xMutex, portMAX_DELAY );
+      xSemaphoreTake(xMutex, portMAX_DELAY);
       audio.loop();
-      xSemaphoreGive( xMutex );
+      xSemaphoreGive(xMutex);
 
-      // Ensure lower priority tasks to run
+      // Ensure lower priority tasks can run
       // - yield() will only give way to higher priority tasks, delay() allows all tasks to run
       delay(1);
     }
@@ -50,11 +49,8 @@ void playAudioTask(void *parameter)
       Serial.printf("Audio Free stack:%lu\n", remainingStack);
       prevMillis = millis();
     }
-
   }
 }
-
-
 
 // Called from the main setup() routine
 // - the task starts running it as soon as it declared
@@ -62,11 +58,11 @@ void createAudioMusicTask()
 {
   // Independent Task to play music
   xTaskCreatePinnedToCore(
-    playAudioTask,  /* Function to implement the task */
-    "PlayAudio",    /* Name of the task */
-    3000,           /* Stack size in words */
-    NULL,           /* Task input parameter */
-    1,              /* Priority of the task - must be higher than 0 (idle)*/
-    &playAudioTaskHandle, /* Task handle. */
-    1);             /* Core where the task should run */
+      playAudioTask,        /* Function to implement the task */
+      "PlayAudio",          /* Name of the task */
+      3000,                 /* Stack size in words */
+      NULL,                 /* Task input parameter */
+      2,                    /* Priority of the task - must be higher than 0 (idle)*/
+      &playAudioTaskHandle, /* Task handle. */
+      1);                   /* Core where the task should run */
 }

@@ -84,7 +84,7 @@ void changeStation(int8_t btnValue)
 
   nextStation = currentStation + btnValue;
 
-  if (nextStation > numberOfStations)
+  if (nextStation >= numberOfStations)
     nextStation = 0;
   else if (nextStation < 0)
     nextStation = numberOfStations - 1;
